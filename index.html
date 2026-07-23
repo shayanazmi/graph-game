@@ -293,6 +293,24 @@
  .nav-card .go{display:block;margin-top:14px;font-size:12.5px;color:var(--pine-dark);font-weight:600;}
  .hero{text-align:center;padding:6px 0 6px;}
  .hero .logo-big{margin-bottom:8px;}
+ .gist-video{max-width:460px;margin:22px auto 4px;}
+ .gist-frame{background:var(--paper-card);border:1.5px solid var(--ink);border-radius:2px;overflow:hidden;aspect-ratio:16/10;}
+ .gist-frame svg{width:100%;height:100%;display:block;}
+ .gist-bar-track{height:3px;background:var(--line);border-radius:2px;margin-top:8px;overflow:hidden;}
+ .gist-bar{height:100%;width:0%;background:var(--pine);}
+ .gist-caption{text-align:center;font-size:13.5px;color:var(--ink-soft);margin:8px 0 6px;min-height:20px;}
+ .gist-dots{display:flex;justify-content:center;gap:6px;margin-bottom:10px;}
+ .gist-dot{width:6px;height:6px;border-radius:50%;background:#c9c2b0;}
+ .gist-dot.on{background:var(--pine);}
+ .gist-controls{display:flex;justify-content:center;gap:8px;}
+ .gist-controls button{font-family:'Times New Roman', Times, serif;font-size:12.5px;border:1.5px solid var(--ink);background:var(--paper-card);border-radius:20px;padding:5px 14px;cursor:pointer;}
+ .gist-controls button:hover{background:var(--ink);color:var(--paper-card);}
+ @keyframes gistPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+ @keyframes gistDraw{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+ @keyframes gistFade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+ .gist-n{transform-origin:center;transform-box:fill-box;animation:gistPop .35s ease backwards;}
+ .gist-e{animation:gistDraw .5s ease backwards;}
+ #gist-scene.show{animation:gistFade .3s ease;}
  .hero h1{font-size:36px;margin:6px 0 8px;}
  .hero p{font-size:15px;color:var(--ink-soft);max-width:60ch;margin:0 auto;line-height:1.6;}
  .badges-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:18px 0 6px;}
@@ -353,6 +371,22 @@
  </svg>
  <h1>Welcome to Graph Theory</h1>
  <p>Introduction &amp; Basics of Graph Theory, Unit 1 e-content module. Choose a section below to get started.</p>
+
+ <div class="gist-video">
+ <p class="home-kicker" style="text-align:center;">Types of Graph : in a gist</p>
+ <div class="gist-frame">
+ <svg id="gist-scene" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg"></svg>
+ </div>
+ <div class="gist-bar-track"><div class="gist-bar" id="gist-bar"></div></div>
+ <p class="gist-caption" id="gist-caption"></p>
+ <div class="gist-dots" id="gist-dots"></div>
+ <div class="gist-controls">
+ <button onclick="gistPrev()">Prev</button>
+ <button id="gist-play-btn" onclick="gistTogglePlay()">Pause</button>
+ <button onclick="gistNext()">Next</button>
+ </div>
+ </div>
+
  <p class="home-kicker" style="text-align:center;margin-top:18px;">Your Badges</p>
  <div class="badges-mount"></div>
  </div>
@@ -1004,19 +1038,19 @@ const LEVELS = [
 }
 ];
 
-// ---------- persistent progress (localStorage) ----------
+// ---------- persistent progress (window.storage, falls back to memory) ----------
 let PROGRESS = { unlocked:[0], completedConcepts:{}, levelDone:{}, bossScore:null };
 const STORAGE_KEY = 'graphquest-progress-v1';
 
-function loadProgress(){
+async function loadProgress(){
  try{
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw){ PROGRESS = JSON.parse(raw); }
+ const res = await window.storage.get(STORAGE_KEY, false);
+ if(res && res.value){ PROGRESS = JSON.parse(res.value); }
  }catch(e){ /* no saved progress yet, or storage unavailable, start fresh in memory */ }
  renderMap();
 }
-function saveProgress(){
- try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(PROGRESS)); }catch(e){ /* memory-only fallback */ }
+async function saveProgress(){
+ try{ await window.storage.set(STORAGE_KEY, JSON.stringify(PROGRESS), false); }catch(e){ /* memory-only fallback */ }
 }
 
 function totalConcepts(){ return LEVELS.reduce((n,l)=> n + (l.concepts? l.concepts.length:0), 0); }
@@ -1859,6 +1893,117 @@ function revealHistory(){
  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+/* ---------- home page gist video: animated overview ---------- */
+function gistEdge(x1,y1,x2,y2,delay,color){
+ const len = Math.hypot(x2-x1,y2-y1);
+ return `<line class="gist-e" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color||'#202A25'}" stroke-width="1.6" style="--len:${len};stroke-dasharray:${len};animation-delay:${delay}s"/>`;
+}
+function gistCurve(d,len,delay,color){
+ return `<path class="gist-e" d="${d}" fill="none" stroke="${color||'#202A25'}" stroke-width="1.6" style="--len:${len};stroke-dasharray:${len};animation-delay:${delay}s"/>`;
+}
+function gistDot(x,y,r,fill,delay){
+ return `<circle class="gist-n" cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="#202A25" stroke-width="1.2" style="animation-delay:${delay}s"/>`;
+}
+function gistLabel(x,y,text,delay){
+ return `<text class="gist-n" x="${x}" y="${y}" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="12" fill="#202A25" style="animation-delay:${delay}s">${text}</text>`;
+}
+const GIST_SCENES = [
+ {cap:'An overview of graph theory and this site', draw:s=>{
+ s.innerHTML = gistEdge(120,100,240,70,0,'#1F6F5C')+gistEdge(240,70,280,160,.1,'#1F6F5C')+gistEdge(280,160,160,180,.2,'#1F6F5C')+gistEdge(160,180,120,100,.3,'#1F6F5C')
+ +gistDot(120,100,10,'#1F6F5C',.4)+gistDot(240,70,10,'#C0821F',.45)+gistDot(280,160,10,'#A6432B',.5)+gistDot(160,180,10,'#154E41',.55);
+ }},
+ {cap:'Simple graph: no loops, no repeated edges between a pair', draw:s=>{
+ s.innerHTML = gistEdge(130,125,270,125,0)
+ +gistDot(130,125,12,'#1F6F5C',.3)+gistDot(270,125,12,'#1F6F5C',.35)
+ +gistLabel(130,105,'A',.5)+gistLabel(270,105,'B',.55);
+ }},
+ {cap:'Multigraph: parallel edges allowed between the same pair', draw:s=>{
+ s.innerHTML = gistCurve('M130 115 Q200 90 270 115',160,0,'#A6432B')+gistCurve('M130 135 Q200 160 270 135',160,.15,'#A6432B')
+ +gistDot(130,125,12,'#A6432B',.4)+gistDot(270,125,12,'#A6432B',.45)
+ +gistLabel(130,105,'1',.6)+gistLabel(270,105,'2',.65);
+ }},
+ {cap:'Complete graph: every pair of vertices directly joined', draw:s=>{
+ const pts=[['A',200,60],['B',280,110],['C',250,190],['D',150,190],['E',120,110]];
+ let l=''; let k=0;
+ for(let i=0;i<5;i++) for(let j=i+1;j<5;j++){ l+=gistEdge(pts[i][1],pts[i][2],pts[j][1],pts[j][2],k*.04,'#C0821F'); k++; }
+ pts.forEach((p,i)=>{ l+=gistDot(p[1],p[2],9,'#C0821F',.4+i*.05); });
+ pts.forEach((p,i)=>{ const lx=p[1], ly=p[2]-16; l+=gistLabel(lx,ly,p[0],.7+i*.03); });
+ s.innerHTML = l;
+ }},
+ {cap:'Bipartite graph: two vertex sets, edges only cross between them', draw:s=>{
+ s.innerHTML = gistEdge(140,80,270,80,0,'#1F6F5C')+gistEdge(140,80,270,170,.1,'#1F6F5C')+gistEdge(140,170,270,80,.2,'#1F6F5C')+gistEdge(140,170,270,170,.3,'#1F6F5C')
+ +gistDot(140,80,10,'#1F6F5C',.5)+gistDot(140,170,10,'#1F6F5C',.55)+gistDot(270,80,10,'#C0821F',.6)+gistDot(270,170,10,'#C0821F',.65)
+ +gistLabel(140,62,'A',.75)+gistLabel(140,192,'B',.8)+gistLabel(270,62,'C',.85)+gistLabel(270,192,'D',.9);
+ }},
+ {cap:'Directed graph: each edge is an ordered pair, direction matters', draw:s=>{
+ s.innerHTML = `<defs><marker id="gist-ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5"/></marker></defs>`
+ +`<line class="gist-e" x1="130" y1="150" x2="200" y2="80" stroke="#154E41" stroke-width="1.6" marker-end="url(#gist-ar)" style="--len:97;stroke-dasharray:97;animation-delay:0s"/>`
+ +`<line class="gist-e" x1="200" y1="80" x2="270" y2="150" stroke="#154E41" stroke-width="1.6" marker-end="url(#gist-ar)" style="--len:97;stroke-dasharray:97;animation-delay:.2s"/>`
+ +gistDot(130,150,11,'#154E41',.5)+gistDot(200,80,11,'#154E41',.55)+gistDot(270,150,11,'#154E41',.6)
+ +gistLabel(130,172,'A',.75)+gistLabel(200,62,'B',.8)+gistLabel(270,172,'C',.85);
+ }},
+ {cap:'Weighted graph: each edge carries a numeric value', draw:s=>{
+ s.innerHTML = gistEdge(130,140,270,140,0,'#A6432B')
+ +`<rect class="gist-n" x="184" y="122" width="32" height="18" rx="4" fill="#C0821F" stroke="#202A25" stroke-width="1" style="animation-delay:.4s"/>`
+ +gistLabel(200,135,'12',.5)
+ +gistDot(130,140,11,'#A6432B',.55)+gistDot(270,140,11,'#A6432B',.6)
+ +gistLabel(130,162,'P',.75)+gistLabel(270,162,'Q',.8);
+ }},
+ {cap:'Explore history, applications, master graphs, and articles below', draw:s=>{
+ s.innerHTML = `<rect class="gist-n" x="60" y="80" width="70" height="50" rx="8" fill="#1F6F5C" style="animation-delay:0s"/>`
+ +`<rect class="gist-n" x="150" y="80" width="70" height="50" rx="8" fill="#A6432B" style="animation-delay:.1s"/>`
+ +`<rect class="gist-n" x="240" y="80" width="70" height="50" rx="8" fill="#154E41" style="animation-delay:.2s"/>`
+ +`<rect class="gist-n" x="150" y="150" width="70" height="50" rx="8" fill="#C0821F" style="animation-delay:.3s"/>`
+ +gistLabel(95,109,'History',.5)+gistLabel(185,109,'Apps',.55)+gistLabel(275,109,'Master',.6)+gistLabel(185,179,'Articles',.65);
+ }}
+];
+let GIST_IDX = 0, GIST_PLAYING = true, GIST_TIMER;
+const GIST_DURATION = 3400;
+function gistBuildDots(){
+ const dotsEl = document.getElementById('gist-dots');
+ if(!dotsEl || dotsEl.children.length) return;
+ GIST_SCENES.forEach((sc,i)=>{
+ const d = document.createElement('div');
+ d.className = 'gist-dot'+(i===0?' on':'');
+ d.id = 'gist-dot-'+i;
+ dotsEl.appendChild(d);
+ });
+}
+function gistRender(){
+ const sceneEl = document.getElementById('gist-scene');
+ const capEl = document.getElementById('gist-caption');
+ if(!sceneEl || !capEl) return;
+ sceneEl.classList.remove('show'); void sceneEl.offsetWidth; sceneEl.classList.add('show');
+ GIST_SCENES[GIST_IDX].draw(sceneEl);
+ capEl.textContent = GIST_SCENES[GIST_IDX].cap;
+ GIST_SCENES.forEach((sc,i)=>{
+ const d = document.getElementById('gist-dot-'+i);
+ if(d) d.classList.toggle('on', i===GIST_IDX);
+ });
+ gistResetBar();
+}
+function gistResetBar(){
+ const barEl = document.getElementById('gist-bar');
+ if(!barEl) return;
+ barEl.style.transition='none'; barEl.style.width='0%'; void barEl.offsetWidth;
+ if(GIST_PLAYING){ barEl.style.transition=`width ${GIST_DURATION}ms linear`; barEl.style.width='100%'; }
+}
+function gistNext(){ GIST_IDX = (GIST_IDX+1) % GIST_SCENES.length; gistRender(); }
+function gistPrev(){ GIST_IDX = (GIST_IDX-1+GIST_SCENES.length) % GIST_SCENES.length; gistRender(); }
+function gistStartTimer(){ clearInterval(GIST_TIMER); GIST_TIMER = setInterval(gistNext, GIST_DURATION); }
+function gistTogglePlay(){
+ GIST_PLAYING = !GIST_PLAYING;
+ const btn = document.getElementById('gist-play-btn');
+ if(btn) btn.textContent = GIST_PLAYING ? 'Pause' : 'Play';
+ const barEl = document.getElementById('gist-bar');
+ if(GIST_PLAYING){ gistStartTimer(); gistResetBar(); } else { clearInterval(GIST_TIMER); if(barEl) barEl.style.transition='none'; }
+}
+function gistInit(){
+ gistBuildDots();
+ gistRender();
+ gistStartTimer();
+}
+
 // ---------- boot ----------
 loadProgress();
 renderHomeIllustrations();
@@ -1866,6 +2011,7 @@ renderRealLifeIllustrations();
 renderHomeTimeline();
 drawSocialExplorer();
 resetPuzzle();
+gistInit();
 
 </script>
 </body>
