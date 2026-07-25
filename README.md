@@ -15,6 +15,11 @@ An interactive, self-paced educational module covering **Unit 1** of Graph Theor
 | **Master Graphs** | Six progressive missions covering graph vocabulary, order & size, degree, connectivity, subgraphs, complements, bipartite/regular graphs, and more — each with interactive builders and quizzes. |
 | **Articles & Videos** | Curated external resources from Wikipedia, MIT OCW, Khan Academy, Numberphile, and freeCodeCamp. |
 
+<!-- RECENT_UPDATES_START -->
+> 💡 **Latest Repo Updates:**
+> * Initialized AI README auto-summarizer powered by NVIDIA NIM API (`meta/llama-3.3-70b-instruct`).
+<!-- RECENT_UPDATES_END -->
+
 ## Features
 
 - 🎮 **Gamified learning** — 6 missions + a 12-question final challenge
