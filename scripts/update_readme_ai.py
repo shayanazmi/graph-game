@@ -5,6 +5,8 @@ import subprocess
 import sys
 import json
 import urllib.request
+import urllib.error
+import time
 import datetime
 
 def get_git_diff_and_commits():
@@ -26,7 +28,7 @@ def get_git_diff_and_commits():
         print(f"Error getting git info: {e}")
         return "Minor repository updates and maintenance."
 
-def call_nvidia_nim(content, api_key):
+def call_nvidia_nim(content, api_key, retries=3):
     url = "https://integrate.api.nvidia.com/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -54,14 +56,25 @@ Git Info:
         "stream": False
     }
 
-    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers=headers)
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_data = json.loads(response.read().decode('utf-8'))
-            return res_data["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        print(f"Error calling NVIDIA NIM API: {e}")
-        return None
+    req_data = json.dumps(payload).encode('utf-8')
+
+    for attempt in range(1, retries + 1):
+        try:
+            print(f"Calling NVIDIA NIM API (attempt {attempt}/{retries})...")
+            req = urllib.request.Request(url, data=req_data, headers=headers)
+            with urllib.request.urlopen(req, timeout=45) as response:
+                res_data = json.loads(response.read().decode('utf-8'))
+                return res_data["choices"][0]["message"]["content"].strip()
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
+            print(f"Attempt {attempt} failed: {e}")
+            if attempt < retries:
+                time.sleep(3)
+            else:
+                print("All retries exhausted.")
+                return None
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            return None
 
 def update_readme(summary_text):
     readme_path = "README.md"
@@ -97,17 +110,16 @@ def update_readme(summary_text):
 def main():
     api_key = os.environ.get("NVIDIA_API_KEY")
     if not api_key:
-        print("NVIDIA_API_KEY environment variable not set.")
+        print("NVIDIA_API_KEY environment variable not set. Please add NVIDIA_API_KEY to GitHub Secrets.")
         sys.exit(1)
 
     git_info = get_git_diff_and_commits()
-    print("Analyzing git info...")
     summary = call_nvidia_nim(git_info, api_key)
     if summary:
         print(f"Generated Summary:\n{summary}")
         update_readme(summary)
     else:
-        print("Failed to generate summary.")
+        print("Failed to generate summary from NVIDIA NIM API.")
 
 if __name__ == "__main__":
     main()
