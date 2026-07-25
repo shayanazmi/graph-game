@@ -65,16 +65,22 @@ Git Info:
             with urllib.request.urlopen(req, timeout=45) as response:
                 res_data = json.loads(response.read().decode('utf-8'))
                 return res_data["choices"][0]["message"]["content"].strip()
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
-            print(f"Attempt {attempt} failed: {e}")
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode('utf-8', errors='ignore')
+            print(f"Attempt {attempt} HTTP Error {e.code}: {e.reason}\nResponse: {err_body}")
             if attempt < retries:
                 time.sleep(3)
-            else:
-                print("All retries exhausted.")
-                return None
+        except (urllib.error.URLError, TimeoutError) as e:
+            print(f"Attempt {attempt} Network Error: {e}")
+            if attempt < retries:
+                time.sleep(3)
         except Exception as e:
-            print(f"Unexpected error: {e}")
-            return None
+            print(f"Attempt {attempt} Unexpected Error: {e}")
+            if attempt < retries:
+                time.sleep(3)
+                
+    print("All retries exhausted.")
+    return None
 
 def update_readme(summary_text):
     readme_path = "README.md"
@@ -110,16 +116,20 @@ def update_readme(summary_text):
 def main():
     api_key = os.environ.get("NVIDIA_API_KEY")
     if not api_key:
-        print("NVIDIA_API_KEY environment variable not set. Please add NVIDIA_API_KEY to GitHub Secrets.")
+        print("ERROR: NVIDIA_API_KEY environment variable not set. Please add NVIDIA_API_KEY to GitHub Secrets.")
         sys.exit(1)
 
+    print("Fetching git info...")
     git_info = get_git_diff_and_commits()
+    print(f"Git info retrieved:\n{git_info}\n")
+
     summary = call_nvidia_nim(git_info, api_key)
     if summary:
-        print(f"Generated Summary:\n{summary}")
+        print(f"Generated Summary:\n{summary}\n")
         update_readme(summary)
     else:
-        print("Failed to generate summary from NVIDIA NIM API.")
+        print("ERROR: Failed to generate summary from NVIDIA NIM API.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
