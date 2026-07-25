@@ -6,6 +6,31 @@ An interactive, self-paced educational module covering **Unit 1** of Graph Theor
 
 ---
 
+## 📸 Screenshots & Preview
+
+![Welcome Screen](assets/preview-home.png)
+
+<details>
+<summary><b>🔍 View More Screenshots (History, Real-Life Applications & Learning Map)</b></summary>
+
+<br/>
+
+### History & Origin — Königsberg Bridges Puzzle
+![Königsberg Bridges Interactive Puzzle](assets/preview-history.png)
+
+### Applications of Graphs in Real Life & Tech
+![Applications of Graphs](assets/preview-applications.png)
+
+### Real-Life Graph Example — World Cup Semifinal DAG
+![World Cup Semifinal DAG](assets/preview-real-life.png)
+
+### Master Graphs — Interactive Learning Map
+![Learning Map](assets/preview-learning-map.png)
+
+</details>
+
+---
+
 ## What's Inside
 
 | Section | Description |
