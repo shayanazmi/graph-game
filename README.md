@@ -16,8 +16,11 @@ An interactive, self-paced educational module covering **Unit 1** of Graph Theor
 | **Articles & Videos** | Curated external resources from Wikipedia, MIT OCW, Khan Academy, Numberphile, and freeCodeCamp. |
 
 <!-- RECENT_UPDATES_START -->
-> 💡 **Latest Repo Updates:**
-> * Initialized AI README auto-summarizer powered by NVIDIA NIM API (`meta/llama-3.3-70b-instruct`).
+> 💡 **Latest Repo Updates (2026-07-25):**
+> * Added a live AI README Bot integration test comment to `index.html`.
+> * Updated HTML meta tags for the Graph Theory learning module.
+> * Implemented robust API retries and timeout for the README auto-summarizer.
+> * Simplified GitHub Action workflow with native git push and verbose logging.
 <!-- RECENT_UPDATES_END -->
 
 ## Features

@@ -39,7 +39,7 @@ def call_nvidia_nim(content, api_key, retries=3):
 Analyze the following recent git commits and diff summary, then write a concise, clean 2-4 bullet point summary of what changed in the project.
 
 Format requirement:
-Return ONLY markdown bullet points. Do not include introductory text, conversational filler, or markdown code block fences (no ``` markdown).
+Return ONLY markdown bullet points starting with *. Do not include introductory text, conversational filler, or markdown code block fences (no ``` markdown).
 
 Git Info:
 {content}
@@ -96,7 +96,18 @@ def update_readme(summary_text):
 
     today = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
     
-    formatted_block = f"{start_tag}\n> 💡 **Latest Repo Updates ({today}):**\n{summary_text}\n{end_tag}"
+    # Format summary lines with blockquote marker >
+    formatted_lines = []
+    for line in summary_text.splitlines():
+        line_str = line.strip()
+        if line_str:
+            if not line_str.startswith(">"):
+                formatted_lines.append(f"> {line_str}")
+            else:
+                formatted_lines.append(line_str)
+
+    bullets = "\n".join(formatted_lines)
+    formatted_block = f"{start_tag}\n> 💡 **Latest Repo Updates ({today}):**\n{bullets}\n{end_tag}"
 
     if start_tag in readme_content and end_tag in readme_content:
         pre = readme_content.split(start_tag)[0]
