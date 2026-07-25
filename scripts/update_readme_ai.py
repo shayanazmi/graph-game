@@ -1,3 +1,5 @@
+# NVIDIA NIM API README Auto-Summarizer
+# Model: meta/llama-3.3-70b-instruct
 import os
 import subprocess
 import sys
