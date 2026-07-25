@@ -42,10 +42,10 @@ An interactive, self-paced educational module covering **Unit 1** of Graph Theor
 
 <!-- RECENT_UPDATES_START -->
 > 💡 **Latest Repo Updates (2026-07-25):**
-> * Added a live AI README Bot integration test comment to `index.html`.
-> * Updated HTML meta tags for the Graph Theory learning module.
-> * Implemented robust API retries and timeout for the README auto-summarizer.
-> * Simplified GitHub Action workflow with native git push and verbose logging.
+> * Added application screenshots and a preview gallery to the README file for better visualization of the project's features.
+> * Implemented an auto-update feature for the README file to include the latest AI summary from NVIDIA NIM, enhancing the documentation with up-to-date information.
+> * Updated the project's workflow to simplify the git push process and added verbose logging for improved debugging and monitoring capabilities.
+> * Modified HTML meta tags for the graph theory module to improve discoverability and search engine optimization.
 <!-- RECENT_UPDATES_END -->
 
 ## Features
