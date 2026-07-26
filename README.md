@@ -40,14 +40,6 @@ An interactive, self-paced educational module covering **Unit 1** of Graph Theor
 | **Master Graphs** | Six progressive missions covering graph vocabulary, order & size, degree, connectivity, subgraphs, complements, bipartite/regular graphs, and more — each with interactive builders and quizzes. |
 | **Articles & Videos** | Curated external resources from Wikipedia, MIT OCW, Khan Academy, Numberphile, and freeCodeCamp. |
 
-<!-- RECENT_UPDATES_START -->
-> 💡 **Latest Repo Updates (2026-07-25):**
-> * Added application screenshots and a preview gallery to the README file for better visualization of the project's features.
-> * Implemented an auto-update feature for the README file to include the latest AI summary from NVIDIA NIM, enhancing the documentation with up-to-date information.
-> * Updated the project's workflow to simplify the git push process and added verbose logging for improved debugging and monitoring capabilities.
-> * Modified HTML meta tags for the graph theory module to improve discoverability and search engine optimization.
-<!-- RECENT_UPDATES_END -->
-
 ## Features
 
 - 🎮 **Gamified learning** — 6 missions + a 12-question final challenge
